@@ -26,14 +26,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Refresh data.json from Google dashboard
+      - name: Refresh data.json + README forecast from Google dashboard
         run: node scripts/build-data.mjs
 
-      - name: Commit data.json if it changed
+      - name: Commit refreshed files if they changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: refresh update data"
-          file_pattern: data.json
+          commit_message: "chore: refresh update data + forecast"
+          file_pattern: "data.json README.md"
 
       - name: Upload site for Pages
         uses: actions/upload-pages-artifact@v3
