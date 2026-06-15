@@ -1,0 +1,20 @@
+# SERP Forecaster
+
+> SERP Forecaster is a free, open-source tool that predicts the likely window for the next Google core update and the next Google spam update, based on the cadence (intervals between past updates) and the seasonality (which months updates cluster in) of every confirmed update since 2018.
+
+SERP Forecaster is not affiliated with Google. Its data comes from the official Google Search Status Dashboard. The output is a statistically likely window, not an exact date — Google does not publish an update schedule and confirms only its larger updates.
+
+## Key facts
+
+- Google has released about 3.3 core updates per year on average since 2018, typically three to four per year.
+- March is the most common month for Google core updates; April has historically had none. May, June, August, November and December are also frequent.
+- The core-update forecast window is the last launch date plus the median of the last six intervals, bounded by the 25th and 75th percentiles of those intervals.
+- Spam updates follow a more irregular schedule and produce a wider forecast window.
+- "Today" is computed in the browser, so the countdown stays current; the underlying dataset is refreshed daily.
+
+## Links
+
+- [Live forecaster](https://bogdankrupin.github.io/serp-forecaster/): the interactive tool — current core/spam update forecast window, seasonal year dial, and full timeline of confirmed updates.
+- [Repository](https://github.com/bogdankrupin/serp-forecaster): source code, methodology, and the daily-updated dataset.
+- [Dataset](https://github.com/bogdankrupin/serp-forecaster/blob/main/data.json): every confirmed Google core and spam update the tool uses, as JSON.
+- [Google Search Status Dashboard](https://status.search.google.com/summary): the official upstream source for confirmed ranking updates.
