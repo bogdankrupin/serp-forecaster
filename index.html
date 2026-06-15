@@ -2,7 +2,62 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SERP Forecaster — Google update predictor</title>
+<title>SERP Forecaster — Google Core &amp; Spam Update Predictions</title>
+<meta name="description" content="Free tool that predicts the likely window for the next Google core update and spam update, based on the cadence and seasonality of every confirmed update since 2018.">
+<link rel="canonical" href="https://bogdankrupin.github.io/serp-forecaster/">
+<meta property="og:title" content="SERP Forecaster — Google Core &amp; Spam Update Predictions">
+<meta property="og:description" content="Predicts the likely window for the next Google core and spam update from historical cadence and seasonality. Updated daily.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://bogdankrupin.github.io/serp-forecaster/">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SERP Forecaster",
+  "alternateName": ["Google Core Update Forecaster", "Google Spam Update Forecaster"],
+  "url": "https://bogdankrupin.github.io/serp-forecaster/",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "description": "Free, open-source tool that predicts the likely window for the next Google core update and spam update, based on the cadence and seasonality of confirmed updates since 2018.",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Bogdan Krupin", "url": "https://github.com/bogdankrupin" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "When is the next Google core update?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Google does not announce updates in advance, so no exact date exists. SERP Forecaster projects the most likely window from the cadence and seasonality of past core updates and recalculates it every day." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can you predict Google algorithm updates?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Not to the day. Exact timing is controlled by Google and unannounced. The rhythm, however, is fairly regular, so a statistically likely window can be projected, which is what this tool does." }
+    },
+    {
+      "@type": "Question",
+      "name": "How often does Google release core updates?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Roughly three to four per year, about 3.3 on average since 2018. Intervals range from a few weeks to several months." }
+    },
+    {
+      "@type": "Question",
+      "name": "What months does Google release core updates most often?",
+      "acceptedAnswer": { "@type": "Answer", "text": "March is by far the most common month for Google core updates, followed by May, June, August, November and December. April has historically had none." }
+    },
+    {
+      "@type": "Question",
+      "name": "Is SERP Forecaster an official Google tool?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. It is an independent, open-source project that uses Google's public Search Status Dashboard as its data source and is not affiliated with Google." }
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -110,6 +165,15 @@
   section{margin-top:18px}
   @media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
   :focus-visible{outline:2px solid var(--fc); outline-offset:2px; border-radius:6px}
+
+  .faq details{border-top:1px solid var(--line); padding:14px 0}
+  .faq details:first-of-type{border-top:0}
+  .faq summary{cursor:pointer; font-family:"Space Grotesk",sans-serif; font-weight:600;
+    font-size:15px; color:var(--text); list-style:none; display:flex; justify-content:space-between; gap:12px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+"; color:var(--fc); font-weight:400; font-size:18px; line-height:1}
+  .faq details[open] summary::after{content:"\2212"}
+  .faq p{margin:10px 0 2px; color:var(--muted); font-size:14px; max-width:68ch}
 </style>
 
 <div class="wrap">
@@ -175,6 +239,20 @@
       Window center = last date + <code>median</code> of the last 6 intervals; window bounds =
       the <code>25th</code> and <code>75th percentiles</code> of those intervals. The seasonal dial shows which
       months hosted updates most often — when cadence and season line up, confidence is higher.</p>
+  </section>
+
+  <section class="card faq">
+    <h2>FAQ</h2>
+    <details><summary>When is the next Google core update?</summary>
+      <p>Google does not announce updates in advance, so no exact date exists. SERP Forecaster projects the most likely window from the cadence and seasonality of past core updates — shown above — and recalculates it every day.</p></details>
+    <details><summary>Can you predict Google algorithm updates?</summary>
+      <p>Not to the day. Exact timing is controlled by Google and unannounced. The rhythm, however, is fairly regular, so a statistically likely window can be projected — which is what this tool does.</p></details>
+    <details><summary>How often does Google release core updates?</summary>
+      <p>Roughly three to four per year — about 3.3 on average since 2018. Intervals range from a few weeks to several months.</p></details>
+    <details><summary>What months does Google release core updates most often?</summary>
+      <p>March is by far the most common month for Google core updates, followed by May, June, August, November and December. April has historically had none.</p></details>
+    <details><summary>Is SERP Forecaster an official Google tool?</summary>
+      <p>No. It is an independent, open-source project that uses Google's public Search Status Dashboard as its data source and is not affiliated with Google.</p></details>
   </section>
 
   <footer id="footer">Data: <a href="https://status.search.google.com/summary">Google Search Status Dashboard</a> · auto-refreshed daily</footer>
