@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SERP Forecaster — Google update predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1419; --panel:#161E27; --panel2:#1C2733; --line:#2A3744;
+    --text:#E7E9E6; --muted:#8893A0; --muted2:#5E6B78;
+    --core:#F0A53A; --spam:#E0664E; --other:#5BA8BD; --fc:#B493F7;
+    --fc-soft:rgba(180,147,247,.16);
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(180,147,247,.06), transparent 60%),
+      radial-gradient(900px 500px at 0% 0%, rgba(91,168,189,.05), transparent 55%),
+      var(--bg);
+    color:var(--text); font-family:Inter,system-ui,sans-serif; line-height:1.5;
+    padding:clamp(16px,3vw,40px);
+  }
+  .wrap{max-width:1080px; margin:0 auto}
+  .eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--muted); margin:0 0 10px}
+  h1{font-family:"Space Grotesk",sans-serif; font-weight:700; letter-spacing:-.02em;
+    font-size:clamp(28px,5vw,46px); line-height:1.02; margin:0 0 12px}
+  h1 .accent{color:var(--fc)}
+  .lede{max-width:62ch; color:var(--muted); font-size:15px; margin:0 0 6px}
+  .caveat{max-width:64ch; color:var(--muted2); font-size:12.5px; font-style:italic; margin:8px 0 28px}
+
+  .grid{display:grid; gap:18px}
+  @media(min-width:860px){ .top{grid-template-columns:1.05fr .95fr} }
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line); border-radius:var(--r); padding:22px}
+  .card h2{font-family:"Space Grotesk",sans-serif; font-size:13px; font-weight:600;
+    letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin:0 0 16px}
+
+  .fc-readout{display:flex; flex-direction:column; gap:4px}
+  .fc-label{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--fc)}
+  .fc-window{font-family:"Space Grotesk",sans-serif; font-weight:700;
+    font-size:clamp(26px,4.4vw,40px); letter-spacing:-.02em; line-height:1.05}
+  .fc-sub{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--muted)}
+  .fc-sub b{color:var(--text); font-weight:600}
+  .fc-divider{height:1px; background:var(--line); margin:18px 0}
+  .ref{display:grid; grid-template-columns:1fr auto; gap:8px 14px;
+    font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+  .ref .k{color:var(--muted)}
+  .ref .v{color:var(--text); text-align:right}
+
+  .dial-card{display:flex; flex-direction:column; align-items:center}
+  svg{display:block; width:100%; height:auto}
+  .legend{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin-top:10px;
+    font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted)}
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .dot{width:9px; height:9px; border-radius:2px; display:inline-block}
+
+  .controls{display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center; margin:0 0 4px}
+  .ctl-group{display:flex; align-items:center; gap:10px}
+  .ctl-group > span{font-family:"IBM Plex Mono",monospace; font-size:11px;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+  .chip{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--text);
+    background:var(--panel2); border:1px solid var(--line); border-radius:999px;
+    padding:6px 13px; cursor:pointer; user-select:none; transition:.15s; display:inline-flex; gap:7px; align-items:center}
+  .chip:hover{border-color:var(--muted2)}
+  .chip[aria-pressed="false"]{opacity:.42}
+  .chip .dot{margin:0}
+  .seg{display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden}
+  .seg button{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted);
+    background:transparent; border:0; padding:7px 14px; cursor:pointer; transition:.15s}
+  .seg button[aria-pressed="true"]{background:var(--fc); color:#1a1330; font-weight:600}
+
+  .tl-scroll{overflow-x:auto; overflow-y:hidden; border-radius:10px;
+    border:1px solid var(--line); background:rgba(0,0,0,.18); padding-bottom:2px;
+    scrollbar-color:var(--muted2) transparent}
+  .tl-scroll::-webkit-scrollbar{height:10px}
+  .tl-scroll::-webkit-scrollbar-thumb{background:var(--muted2); border-radius:6px}
+  .tl-marker{cursor:pointer}
+  .tl-marker:hover .stem{stroke-width:3}
+  .tl-marker:hover circle{r:6.5}
+
+  #tip{position:fixed; z-index:50; pointer-events:none; opacity:0; transform:translateY(4px);
+    transition:opacity .12s; background:#0b1116; border:1px solid var(--line);
+    border-radius:10px; padding:11px 13px; max-width:260px; font-size:12.5px;
+    box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  #tip .t-name{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:13.5px; margin-bottom:3px}
+  #tip .t-date{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted); margin-bottom:6px}
+  #tip .t-note{color:var(--muted); font-size:12px}
+  #tip .t-tag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px;
+    letter-spacing:.1em; text-transform:uppercase; padding:2px 7px; border-radius:5px; margin-top:7px}
+
+  .stats{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line);
+    border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-top:18px}
+  @media(min-width:680px){ .stats{grid-template-columns:repeat(4,1fr)} }
+  .stat{background:var(--panel); padding:16px 18px}
+  .stat .n{font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:24px; letter-spacing:-.01em}
+  .stat .l{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); margin-top:2px}
+
+  .method{font-size:12.5px; color:var(--muted); margin-top:16px; max-width:70ch}
+  .method code{font-family:"IBM Plex Mono",monospace; background:var(--panel2);
+    padding:1px 6px; border-radius:5px; color:var(--text); font-size:11.5px}
+  footer{margin-top:26px; font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted2)}
+  footer a{color:var(--muted)}
+  section{margin-top:18px}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+  :focus-visible{outline:2px solid var(--fc); outline-offset:2px; border-radius:6px}
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">SERP volatility instrument · core-update cadence + seasonality</p>
+  <h1>When will the next <span class="accent">Google update</span> land?</h1>
+  <p class="lede">The forecast is built on the confirmed core updates in Google's Search Status Dashboard:
+    we measure cadence (intervals between launches) and seasonality (which months Google has historically
+    shipped updates in), then project forward from the last known launch.</p>
+  <p class="caveat">This isn't a prophecy. Google doesn't publish a schedule and openly says it doesn't confirm
+    every update. The tool shows a statistically likely window, not a date — treat it as a monitoring cue, not a deadline.</p>
+
+  <div class="grid top">
+    <div class="card">
+      <h2>Next core-update forecast</h2>
+      <div class="fc-readout">
+        <span class="fc-label" id="fcBasis">basis: cadence of recent launches</span>
+        <div class="fc-window" id="fcWindow">loading…</div>
+        <div class="fc-sub" id="fcCentral">—</div>
+      </div>
+      <div class="fc-divider"></div>
+      <div class="ref">
+        <div class="k">median of recent intervals</div><div class="v" id="rMedR">—</div>
+        <div class="k">mean of recent intervals</div><div class="v" id="rMeanR">—</div>
+        <div class="k">median across all history</div><div class="v" id="rMedAll">—</div>
+        <div class="k">days from today to center</div><div class="v" id="rDays">—</div>
+      </div>
+    </div>
+
+    <div class="card dial-card">
+      <h2 style="align-self:flex-start">Seasonal year dial</h2>
+      <svg id="dial" viewBox="0 0 340 360" role="img" aria-label="Radial distribution of updates by month with the forecast window"></svg>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--core)"></i>core</span>
+        <span><i class="dot" style="background:var(--spam)"></i>spam</span>
+        <span><i class="dot" style="background:var(--fc)"></i>forecast window</span>
+        <span><i class="dot" style="background:var(--text)"></i>now</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>Timeline of all confirmed updates</h2>
+    <div class="controls">
+      <div class="ctl-group">
+        <span>show</span>
+        <button class="chip" data-type="core" aria-pressed="true"><i class="dot" style="background:var(--core)"></i>core</button>
+        <button class="chip" data-type="spam" aria-pressed="true"><i class="dot" style="background:var(--spam)"></i>spam</button>
+        <button class="chip" data-type="other" aria-pressed="true"><i class="dot" style="background:var(--other)"></i>other</button>
+      </div>
+      <div class="ctl-group">
+        <span>forecast model</span>
+        <div class="seg" id="basisSeg">
+          <button data-basis="core" aria-pressed="true">core only</button>
+          <button data-basis="all" aria-pressed="false">core + spam</button>
+        </div>
+      </div>
+    </div>
+    <div class="tl-scroll"><svg id="timeline" role="img" aria-label="Horizontal timeline of Google updates with the forecast window"></svg></div>
+
+    <div class="stats" id="stats"></div>
+
+    <p class="method">How it's computed: we take the <i>launch</i> dates of core updates and measure the intervals between them.
+      Window center = last date + <code>median</code> of the last 6 intervals; window bounds =
+      the <code>25th</code> and <code>75th percentiles</code> of those intervals. The seasonal dial shows which
+      months hosted updates most often — when cadence and season line up, confidence is higher.</p>
+  </section>
+
+  <footer id="footer">Data: <a href="https://status.search.google.com/summary">Google Search Status Dashboard</a> · auto-refreshed daily</footer>
+</div>
+
+<div id="tip" role="tooltip"></div>
+
+<script>
+const DAY=864e5;
+const d=s=>new Date(s+"T00:00:00Z");
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmt=x=>x.getUTCDate()+" "+MON[x.getUTCMonth()]+" "+x.getUTCFullYear();
+const addDays=(x,n)=>new Date(x.getTime()+n*DAY);
+const median=a=>{const s=[...a].sort((p,q)=>p-q);const m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+const mean=a=>a.reduce((p,q)=>p+q,0)/a.length;
+function percentile(a,p){const s=[...a].sort((x,y)=>x-y);const idx=(s.length-1)*p;const lo=Math.floor(idx),hi=Math.ceil(idx);
+  return lo===hi?s[lo]:s[lo]+(s[hi]-s[lo])*(idx-lo);}
+
+// "Today" is computed at view time, so the now-marker and countdown stay current
+// between data refreshes.
+const NOW=d(new Date().toISOString().slice(0,10));
+const TYPE_COLOR={core:"var(--core)",spam:"var(--spam)",other:"var(--other)"};
+
+// Minimal fallback so the page still renders if data.json can't be fetched
+// (e.g. opened directly from disk). The real list comes from data.json.
+const FALLBACK=[
+ {start:"2025-03-13",end:"2025-03-27",type:"core",name:"March 2025 Core",note:""},
+ {start:"2025-06-30",end:"2025-07-17",type:"core",name:"June 2025 Core",note:""},
+ {start:"2025-12-11",end:"2025-12-29",type:"core",name:"December 2025 Core",note:""},
+ {start:"2026-02-05",end:"2026-02-27",type:"core",name:"February 2026 Discover Core",note:""},
+ {start:"2026-03-27",end:"2026-04-08",type:"core",name:"March 2026 Core",note:""},
+ {start:"2026-05-21",end:"2026-06-02",type:"core",name:"May 2026 Core",note:""}
+];
+
+let UPD=[];
+let state={basis:"core", show:{core:true,spam:true,other:true}};
+
+// ---------- DATA LOAD ----------
+async function loadData(){
+  try{
+    const res=await fetch("./data.json",{cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const j=await res.json();
+    UPD=j.updates.map(u=>({s:d(u.start),e:d(u.end),type:u.type,name:u.name,note:u.note||""}));
+    if(j.generated){
+      const g=new Date(j.generated);
+      document.getElementById("footer").innerHTML=
+        'Data: <a href="https://status.search.google.com/summary">Google Search Status Dashboard</a> · '+
+        UPD.length+' updates · refreshed '+g.getUTCDate()+" "+MON[g.getUTCMonth()]+" "+g.getUTCFullYear();
+    }
+  }catch(err){
+    console.warn("data.json not loaded, using fallback:",err.message);
+    UPD=FALLBACK.map(u=>({s:d(u.start),e:d(u.end),type:u.type,name:u.name,note:u.note||""}));
+    document.getElementById("footer").textContent="Data: built-in fallback (serve over HTTP to load the live list)";
+  }
+}
+
+// ---------- PREDICTION ----------
+function compute(){
+  const set = state.basis==="core" ? ["core"] : ["core","spam"];
+  const starts=[...UPD.filter(u=>set.includes(u.type)).map(u=>u.s)].sort((a,b)=>a-b);
+  const gaps=[]; for(let i=1;i<starts.length;i++) gaps.push(Math.round((starts[i]-starts[i-1])/DAY));
+  const recent=gaps.slice(-6);
+  const last=starts[starts.length-1];
+  const medR=median(recent), meanR=mean(recent), medAll=median(gaps);
+  const lo=percentile(recent,0.25), hi=percentile(recent,0.75);
+  return {
+    last, medR, meanR, medAll, gaps, recent,
+    central:addDays(last,Math.round(medR)),
+    winStart:addDays(last,Math.round(lo)),
+    winEnd:addDays(last,Math.round(hi)),
+    refMean:addDays(last,Math.round(meanR)),
+    refMedAll:addDays(last,Math.round(medAll)),
+    count:starts.length
+  };
+}
+
+function renderReadout(P){
+  document.getElementById("fcBasis").textContent =
+    "basis: " + (state.basis==="core" ? "core-update cadence" : "core + spam cadence");
+  document.getElementById("fcWindow").innerHTML =
+    fmt(P.winStart) + " <span style='color:var(--muted2)'>\u2192</span> " + fmt(P.winEnd);
+  const fromNow=Math.round((P.central-NOW)/DAY);
+  document.getElementById("fcCentral").innerHTML =
+    "central estimate: <b>"+fmt(P.central)+"</b>";
+  document.getElementById("rMedR").textContent = Math.round(P.medR)+" d \u2192 "+fmt(P.central);
+  document.getElementById("rMeanR").textContent= Math.round(P.meanR)+" d \u2192 "+fmt(P.refMean);
+  document.getElementById("rMedAll").textContent=Math.round(P.medAll)+" d \u2192 "+fmt(P.refMedAll);
+  document.getElementById("rDays").textContent = (fromNow>0?"+":"")+fromNow+" d";
+
+  const allGaps=P.gaps;
+  const cores=UPD.filter(u=>u.type==="core").length;
+  const yrs=UPD.length?UPD[0].s.getUTCFullYear()+"\u2013"+UPD[UPD.length-1].s.getUTCFullYear():"";
+  const stats=[
+    [P.count, state.basis==="core"?"core launches in model":"launches in model"],
+    [Math.round(median(allGaps))+" d","median interval"],
+    [Math.min(...allGaps)+"\u2013"+Math.max(...allGaps),"interval range, days"],
+    [cores,"total core ("+yrs+")"]
+  ];
+  document.getElementById("stats").innerHTML=stats.map(([n,l])=>
+    `<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join("");
+}
+
+// ---------- DIAL ----------
+const NS="http://www.w3.org/2000/svg";
+function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function angleForDate(x){
+  const m=x.getUTCMonth();
+  const dim=new Date(Date.UTC(x.getUTCFullYear(),m+1,0)).getUTCDate();
+  const frac=m+(x.getUTCDate()-1)/dim;
+  return -90+frac*30;
+}
+const pt=(cx,cy,r,deg)=>{const a=deg*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];};
+function arcPath(cx,cy,r,a0,a1){
+  const [x0,y0]=pt(cx,cy,r,a0),[x1,y1]=pt(cx,cy,r,a1);
+  const large=((a1-a0+360)%360)>180?1:0;
+  return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+}
+function renderDial(P){
+  const svg=document.getElementById("dial"); svg.innerHTML="";
+  const cx=170,cy=180,r0=66,maxLen=58;
+  const months=Array.from({length:12},()=>({core:0,spam:0}));
+  UPD.forEach(u=>{ if(u.type==="core")months[u.s.getUTCMonth()].core++;
+                   else if(u.type==="spam")months[u.s.getUTCMonth()].spam++; });
+  const maxC=Math.max(...months.map(m=>m.core+m.spam),1);
+
+  [r0,r0+maxLen].forEach(r=>svg.appendChild(el("circle",{cx,cy,r,fill:"none",stroke:"var(--line)","stroke-width":1})));
+
+  for(let i=0;i<12;i++){
+    const a=-90+(i+0.5)*30;
+    const total=months[i].core+months[i].spam;
+    if(months[i].core){
+      const l=(months[i].core/maxC)*maxLen;
+      const [x0,y0]=pt(cx,cy,r0,a),[x1,y1]=pt(cx,cy,r0+l,a);
+      svg.appendChild(el("line",{x1:x0,y1:y0,x2:x1,y2:y1,stroke:"var(--core)","stroke-width":13,"stroke-linecap":"round",opacity:.92}));
+    }
+    if(months[i].spam){
+      const base=(months[i].core/maxC)*maxLen;
+      const l=(months[i].spam/maxC)*maxLen;
+      const [x0,y0]=pt(cx,cy,r0+base+2,a),[x1,y1]=pt(cx,cy,r0+base+2+l,a);
+      svg.appendChild(el("line",{x1:x0,y1:y0,x2:x1,y2:y1,stroke:"var(--spam)","stroke-width":13,"stroke-linecap":"round",opacity:.92}));
+    }
+    const [lx,ly]=pt(cx,cy,r0+maxLen+16,a);
+    const t=el("text",{x:lx,y:ly+4,"text-anchor":"middle","font-size":11,
+      "font-family":"IBM Plex Mono, monospace",fill: total?"var(--text)":"var(--muted2)"});
+    t.textContent=MON[i];
+    svg.appendChild(t);
+    if(total){
+      const [nx,ny]=pt(cx,cy,r0+maxLen+30,a);
+      const n=el("text",{x:nx,y:ny+4,"text-anchor":"middle","font-size":10,
+        "font-family":"IBM Plex Mono, monospace",fill:"var(--muted)"});
+      n.textContent=total; svg.appendChild(n);
+    }
+  }
+
+  const a0=angleForDate(P.winStart), a1=angleForDate(P.winEnd);
+  const rArc=r0+maxLen+8;
+  svg.appendChild(el("path",{d:arcPath(cx,cy,rArc,a0,a1),fill:"none",stroke:"var(--fc)",
+    "stroke-width":10,"stroke-linecap":"round",opacity:.25}));
+  svg.appendChild(el("path",{d:arcPath(cx,cy,rArc,a0,a1),fill:"none",stroke:"var(--fc)",
+    "stroke-width":4,"stroke-linecap":"round"}));
+  const ac=angleForDate(P.central);
+  const [c0x,c0y]=pt(cx,cy,rArc-7,ac),[c1x,c1y]=pt(cx,cy,rArc+7,ac);
+  svg.appendChild(el("line",{x1:c0x,y1:c0y,x2:c1x,y2:c1y,stroke:"var(--fc)","stroke-width":2.5}));
+  const [cdx,cdy]=pt(cx,cy,rArc,ac);
+  svg.appendChild(el("circle",{cx:cdx,cy:cdy,r:4,fill:"var(--fc)"}));
+
+  const an=angleForDate(NOW);
+  const [nx,ny]=pt(cx,cy,r0+maxLen+2,an);
+  svg.appendChild(el("line",{x1:cx,y1:cy,x2:nx,y2:ny,stroke:"var(--text)","stroke-width":1.5,opacity:.65,"stroke-dasharray":"2 3"}));
+  svg.appendChild(el("circle",{cx,cy,r:3,fill:"var(--text)"}));
+
+  const t1=el("text",{x:cx,y:cy-4,"text-anchor":"middle","font-size":10,
+    "font-family":"IBM Plex Mono, monospace",fill:"var(--muted)"});
+  t1.textContent="likely window"; svg.appendChild(t1);
+  const t2=el("text",{x:cx,y:cy+13,"text-anchor":"middle","font-size":13,"font-weight":600,
+    "font-family":"Space Grotesk, sans-serif",fill:"var(--fc)"});
+  t2.textContent=MON[P.central.getUTCMonth()]+" "+P.central.getUTCFullYear();
+  svg.appendChild(t2);
+}
+
+// ---------- TIMELINE ----------
+function renderTimeline(P){
+  const svg=document.getElementById("timeline");
+  const startYear=UPD.length?UPD[0].s.getUTCFullYear():2021;
+  const endYear=NOW.getUTCFullYear()+1;
+  const t0=d(startYear+"-01-01"), t1=d(endYear+"-12-31");
+  const pxPerYear=150, H=210, padL=20, padR=40, top=28, baseY=150;
+  const totalDays=(t1-t0)/DAY;
+  const W=padL+padR+ (totalDays/365.25)*pxPerYear;
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svg.setAttribute("width",W); svg.setAttribute("height",H);
+  svg.innerHTML="";
+  const X=x=>padL+((x-t0)/DAY/365.25)*pxPerYear;
+
+  for(let y=startYear;y<=endYear;y++){
+    const gx=X(d(y+"-01-01"));
+    svg.appendChild(el("line",{x1:gx,y1:top,x2:gx,y2:baseY+8,stroke:"var(--line)","stroke-width":1}));
+    const t=el("text",{x:gx+4,y:H-10,"font-size":12,"font-family":"IBM Plex Mono, monospace",fill:"var(--muted)"});
+    t.textContent=y; svg.appendChild(t);
+  }
+  svg.appendChild(el("line",{x1:padL,y1:baseY,x2:W-padR+20,y2:baseY,stroke:"var(--muted2)","stroke-width":1}));
+
+  const fx0=X(P.winStart), fx1=X(P.winEnd), fxc=X(P.central);
+  svg.appendChild(el("rect",{x:fx0,y:top,width:Math.max(fx1-fx0,3),height:baseY-top,
+    fill:"var(--fc-soft)",stroke:"var(--fc)","stroke-width":1,"stroke-dasharray":"3 3",rx:4}));
+  svg.appendChild(el("line",{x1:fxc,y1:top,x2:fxc,y2:baseY,stroke:"var(--fc)","stroke-width":2}));
+  const ftxt=el("text",{x:fxc,y:top-8,"text-anchor":"middle","font-size":11,
+    "font-family":"IBM Plex Mono, monospace",fill:"var(--fc)"});
+  ftxt.textContent="forecast"; svg.appendChild(ftxt);
+
+  let i=0;
+  UPD.slice().sort((a,b)=>a.s-b.s).forEach(u=>{
+    if(!state.show[u.type]) return;
+    const x=X(u.s);
+    const dur=Math.max((u.e-u.s)/DAY,0);
+    const stemH = u.type==="core"?70:(u.type==="spam"?48:34);
+    const up = (i++%2===0);
+    const y2 = up ? baseY-stemH : baseY+ (u.type==="core"?40:30);
+    const g=el("g",{class:"tl-marker"});
+    if(dur>1){
+      g.appendChild(el("rect",{x,y:baseY-2.5,width:(dur/365.25)*pxPerYear,height:5,
+        rx:2.5,fill:TYPE_COLOR[u.type],opacity:.35}));
+    }
+    g.appendChild(el("line",{class:"stem",x1:x,y1:baseY,x2:x,y2,stroke:TYPE_COLOR[u.type],"stroke-width":2}));
+    g.appendChild(el("circle",{cx:x,cy:y2,r:5,fill:TYPE_COLOR[u.type],stroke:"var(--bg)","stroke-width":1.5}));
+    g.addEventListener("mousemove",ev=>showTip(ev,u));
+    g.addEventListener("mouseleave",hideTip);
+    svg.appendChild(g);
+  });
+}
+
+// ---------- TOOLTIP ----------
+const tip=document.getElementById("tip");
+function showTip(ev,u){
+  const same=u.s.getTime()===u.e.getTime();
+  tip.innerHTML=`<div class="t-name">${u.name}</div>
+    <div class="t-date">${fmt(u.s)}${same?"":" \u2192 "+fmt(u.e)+" \u00B7 "+Math.round((u.e-u.s)/DAY)+" d"}</div>
+    ${u.note?`<div class="t-note">${u.note}</div>`:""}
+    <span class="t-tag" style="background:${TYPE_COLOR[u.type]}22;color:${TYPE_COLOR[u.type]}">${u.type}</span>`;
+  tip.style.opacity=1;
+  const pad=14; let x=ev.clientX+pad, y=ev.clientY+pad;
+  if(x+270>innerWidth)x=ev.clientX-270; if(y+140>innerHeight)y=ev.clientY-140;
+  tip.style.left=x+"px"; tip.style.top=y+"px";
+}
+function hideTip(){tip.style.opacity=0;}
+
+// ---------- WIRING ----------
+function renderAll(){ if(!UPD.length) return; const P=compute(); renderReadout(P); renderDial(P); renderTimeline(P); }
+document.querySelectorAll(".chip[data-type]").forEach(b=>{
+  b.addEventListener("click",()=>{
+    const t=b.dataset.type, on=b.getAttribute("aria-pressed")==="true";
+    b.setAttribute("aria-pressed",String(!on)); state.show[t]=!on; renderAll();
+  });
+});
+document.querySelectorAll("#basisSeg button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll("#basisSeg button").forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true"); state.basis=b.dataset.basis; renderAll();
+  });
+});
+
+loadData().then(()=>{
+  renderAll();
+  requestAnimationFrame(()=>{const s=document.querySelector(".tl-scroll"); if(s)s.scrollLeft=s.scrollWidth;});
+});
+</script>
+</html>
