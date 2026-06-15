@@ -1,0 +1,35 @@
+name: Update data & deploy
+
+on:
+  schedule:
+    - cron: "17 6 * * *"   # every day at 06:17 UTC
+  workflow_dispatch:        # lets you run it manually from the Actions tab
+  push:
+    branches: [main]
+
+permissions:
+  contents: write           # needed to commit the refreshed data.json
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Refresh data.json from Google dashboard
+        run: node scripts/build-data.mjs
+
+      - name: Commit data.json if it changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git
