@@ -1,6 +1,7 @@
 {
-  "generated": "2026-06-15T15:48:46.848Z",
-  "source": "curated seed (initial) — refreshed daily from Google Search Status Dashboard",
+  "generated": "2026-06-15T16:20:46.327Z",
+  "source": "Google Search Status Dashboard (Ranking, 2021+) merged with curated seed",
+  "count": 36,
   "updates": [
     {
       "start": "2018-03-08",
@@ -87,18 +88,18 @@
       "note": ""
     },
     {
-      "start": "2022-09-12",
-      "end": "2022-09-26",
-      "type": "core",
-      "name": "September 2022 Core",
-      "note": ""
-    },
-    {
       "start": "2022-08-25",
       "end": "2022-09-26",
       "type": "other",
       "name": "Aug 2022 Helpful Content",
       "note": "First version of the Helpful Content System."
+    },
+    {
+      "start": "2022-09-12",
+      "end": "2022-09-26",
+      "type": "core",
+      "name": "September 2022 Core",
+      "note": ""
     },
     {
       "start": "2023-03-15",
@@ -200,7 +201,7 @@
     },
     {
       "start": "2025-08-26",
-      "end": "2025-09-05",
+      "end": "2025-09-22",
       "type": "spam",
       "name": "August 2025 Spam",
       "note": ""
@@ -225,6 +226,13 @@
       "type": "core",
       "name": "February 2026 Discover Core",
       "note": "First core update for Discover only."
+    },
+    {
+      "start": "2026-02-05",
+      "end": "2026-02-27",
+      "type": "other",
+      "name": "February 2026 Discover",
+      "note": ""
     },
     {
       "start": "2026-03-24",
