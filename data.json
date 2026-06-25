@@ -1,7 +1,7 @@
 {
-  "generated": "2026-06-24T15:38:54.588Z",
+  "generated": "2026-06-25T16:04:40.931Z",
   "source": "Google Search Status Dashboard (Ranking, 2021+) merged with curated seed",
-  "count": 36,
+  "count": 37,
   "updates": [
     {
       "start": "2018-03-08",
@@ -254,6 +254,13 @@
       "type": "core",
       "name": "May 2026 Core",
       "note": "Launched the day after Google I/O."
+    },
+    {
+      "start": "2026-06-24",
+      "end": "2026-06-24",
+      "type": "spam",
+      "name": "June 2026 Spam",
+      "note": ""
     }
   ]
 }
