@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-21T12:56:39.201Z",
+  "generated": "2026-09-22T11:46:17.857Z",
   "source": "Google Search Status Dashboard (Ranking, 2021+) merged with curated seed",
   "count": 38,
   "updates": [
@@ -201,7 +201,7 @@
     },
     {
       "start": "2025-08-26",
-      "end": "2025-09-22",
+      "end": "2025-09-05",
       "type": "spam",
       "name": "August 2025 Spam",
       "note": ""
