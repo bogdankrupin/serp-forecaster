@@ -15,12 +15,12 @@ The whole thing is a single static HTML page plus a daily data job. No backend, 
 <!-- FORECAST:START -->
 ## Latest forecast
 
-*As of 10 November 2026 — recalculated automatically every day on the live site.*
+*As of 11 November 2026 — recalculated automatically every day on the live site.*
 
-- **Next Google core update window:** ~**15 July 2026 → 3 September 2026**
-- **Central estimate:** ~**3 August 2026**
-- **Last confirmed core update:** May 2026 Core (started 21 May 2026)
-- **Basis:** median of the last 6 core-update intervals (73.5 days), with the window bounded by the 25th–75th percentile of recent intervals.
+- **Next Google core update window:** ~**4 January 2027 → 9 April 2027**
+- **Central estimate:** ~**1 February 2027**
+- **Last confirmed core update:** November 2026 Core (started 10 November 2026)
+- **Basis:** median of the last 6 core-update intervals (82.5 days), with the window bounded by the 25th–75th percentile of recent intervals.
 
 The forecast combines update cadence and seasonality; see [How the prediction works](#how-the-prediction-works).
 <!-- FORECAST:END -->
