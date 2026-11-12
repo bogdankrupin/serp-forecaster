@@ -15,7 +15,7 @@ The whole thing is a single static HTML page plus a daily data job. No backend, 
 <!-- FORECAST:START -->
 ## Latest forecast
 
-*As of 11 November 2026 — recalculated automatically every day on the live site.*
+*As of 12 November 2026 — recalculated automatically every day on the live site.*
 
 - **Next Google core update window:** ~**4 January 2027 → 9 April 2027**
 - **Central estimate:** ~**1 February 2027**
