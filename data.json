@@ -1,7 +1,7 @@
 {
-  "generated": "2026-11-23T18:22:26.459Z",
+  "generated": "2026-11-24T17:53:37.678Z",
   "source": "Google Search Status Dashboard (Ranking, 2021+) merged with curated seed",
-  "count": 40,
+  "count": 41,
   "updates": [
     {
       "start": "2018-03-08",
@@ -278,9 +278,16 @@
     },
     {
       "start": "2026-11-10",
-      "end": "2026-11-10",
+      "end": "2026-11-24",
       "type": "core",
       "name": "November 2026 Core",
+      "note": ""
+    },
+    {
+      "start": "2026-11-24",
+      "end": "2026-11-24",
+      "type": "core",
+      "name": "December 2026 Core",
       "note": ""
     }
   ]
